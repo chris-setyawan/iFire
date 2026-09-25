@@ -1,64 +1,109 @@
 "use client"
 
-import Link from "next/link"
 import { useState } from "react"
-import { MenuIcon, XIcon, FlameIcon } from "./icons"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import { Logo } from "./logo-dynamic-flames"
+import { Button } from "./ui/button"
+import { Menu, X } from "lucide-react"
 
-export default function Navbar() {
-  const [isOpen, setIsOpen] = useState(false)
+const navItems = [
+  { href: "/", label: "Home" },
+  { href: "/upload", label: "Detection" },
+  { href: "/dashboard", label: "Dashboard" },
+  { href: "/risk-prediction", label: "Risk Prediction" },
+  { href: "/about", label: "About" },
+]
 
-  const navLinks = [
-    { href: "/", label: "Home" },
-    { href: "/upload", label: "Upload" },
-    { href: "/dashboard", label: "Dashboard" },
-    { href: "/risk-prediction", label: "Risk Prediction" },
-    { href: "/about", label: "About" },
-  ]
+export function Navbar() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const pathname = usePathname()
+
+  const isActive = (href: string) => {
+    if (href === "/") return pathname === "/"
+    return pathname.startsWith(href)
+  }
 
   return (
-    <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
+    <nav className="sticky top-0 z-50 bg-white border-b border-slate-200 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          <Link href="/" className="flex items-center gap-2 group">
-            <FlameIcon className="w-6 h-6 text-primary" />
-            <span className="font-bold text-xl text-foreground">iFire</span>
+        <div className="flex items-center justify-between h-16">
+          {/* Logo */}
+          <Link href="/" className="flex-shrink-0">
+            <Logo variant="compact" />
           </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-1">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-              >
-                {link.label}
+            {navItems.map((item) => (
+              <Link key={item.href} href={item.href}>
+                <Button
+                  variant="ghost"
+                  className={`px-4 font-medium transition-colors ${
+                    isActive(item.href)
+                      ? "text-red-700 bg-red-50 hover:bg-red-100"
+                      : "text-slate-600 hover:text-red-700 hover:bg-slate-50"
+                  }`}
+                >
+                  {item.label}
+                </Button>
               </Link>
             ))}
           </div>
 
-          {/* Mobile menu button */}
-          <button onClick={() => setIsOpen(!isOpen)} className="md:hidden p-2 rounded-md hover:bg-muted">
-            {isOpen ? <XIcon className="w-6 h-6" /> : <MenuIcon className="w-6 h-6" />}
+          {/* CTA Button (Desktop) */}
+          <div className="hidden md:block">
+            <Link href="/upload">
+              <Button className="bg-gradient-to-r from-red-800 to-red-600 hover:from-red-900 hover:to-red-700 text-white font-semibold shadow-md">
+                Start Detection
+              </Button>
+            </Link>
+          </div>
+
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden p-2 rounded-lg hover:bg-slate-100 transition-colors"
+          >
+            {mobileMenuOpen ? (
+              <X className="w-6 h-6 text-slate-600" />
+            ) : (
+              <Menu className="w-6 h-6 text-slate-600" />
+            )}
           </button>
         </div>
+      </div>
 
-        {/* Mobile Navigation */}
-        {isOpen && (
-          <div className="md:hidden pb-4 space-y-2">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="block px-3 py-2 rounded-md text-sm font-medium hover:bg-muted transition-colors"
-                onClick={() => setIsOpen(false)}
-              >
-                {link.label}
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <div className="md:hidden border-t border-slate-200 bg-white">
+          <div className="px-4 py-3 space-y-1">
+            {navItems.map((item) => (
+              <Link key={item.href} href={item.href}>
+                <Button
+                  variant="ghost"
+                  className={`w-full justify-start font-medium ${
+                    isActive(item.href)
+                      ? "text-red-700 bg-red-50"
+                      : "text-slate-600"
+                  }`}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {item.label}
+                </Button>
               </Link>
             ))}
+            <Link href="/upload">
+              <Button 
+                className="w-full bg-gradient-to-r from-red-800 to-red-600 text-white font-semibold mt-2"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Start Detection
+              </Button>
+            </Link>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </nav>
   )
 }

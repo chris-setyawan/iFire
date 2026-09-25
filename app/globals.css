@@ -4,7 +4,6 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Professional, natural color palette */
   --background: oklch(0.98 0 0);
   --foreground: oklch(0.13 0 0);
   --card: oklch(1 0 0);
@@ -137,7 +136,6 @@
   }
 }
 
-/* Fire gradient animations */
 @keyframes fire-glow {
   0%,
   100% {
@@ -152,7 +150,6 @@
   animation: fire-glow 3s ease-in-out infinite;
 }
 
-/* Add fade-up animation for advanced dashboard section */
 @keyframes fade-up {
   from {
     opacity: 0;
@@ -168,7 +165,6 @@
   animation: fade-up 0.6s ease-out;
 }
 
-/* Add fade-in animation for alerts log items */
 @keyframes fade-in {
   from {
     opacity: 0;
@@ -182,7 +178,6 @@
   animation: fade-in 0.5s ease-out forwards;
 }
 
-/* Professional animations */
 @keyframes fade-in {
   from {
     opacity: 0;

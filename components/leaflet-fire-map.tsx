@@ -1,8 +1,21 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet"
+import L from "leaflet"
+import "leaflet/dist/leaflet.css"
 import { Card } from "@/components/ui/card"
-import { Eye, EyeOff } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+
+// Fix Leaflet default icon issue
+if (typeof window !== 'undefined') {
+  delete (L.Icon.Default.prototype as any)._getIconUrl
+  L.Icon.Default.mergeOptions({
+    iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+    iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+    shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+  })
+}
 
 interface Hotspot {
   id: number
@@ -13,6 +26,7 @@ interface Hotspot {
   latitude: number
   longitude: number
   region: string
+  detectionType?: "Fire" | "Smoke" | "No Fire"
 }
 
 interface LeafletFireMapProps {
@@ -22,266 +36,221 @@ interface LeafletFireMapProps {
   zoomTrigger?: number
 }
 
+// Component to handle map zoom
+function MapController({ selectedHotspot, zoomTrigger }: { selectedHotspot: Hotspot | null; zoomTrigger: number }) {
+  const map = useMap()
+  
+  useEffect(() => {
+    if (selectedHotspot && zoomTrigger > 0) {
+      // Small delay to ensure map is ready
+      setTimeout(() => {
+        try {
+          map.flyTo(
+            [selectedHotspot.latitude, selectedHotspot.longitude],
+            13,
+            {
+              animate: true,
+              duration: 1.5,
+            }
+          )
+        } catch (error) {
+          console.log("Map animation error:", error)
+        }
+      }, 100)
+    }
+  }, [selectedHotspot, zoomTrigger, map])
+  
+  return null
+}
+
+// Custom marker icons
+const createCustomIcon = (riskLevel: string, isSelected: boolean) => {
+  const colors = {
+    High: "#ef4444",
+    Medium: "#f59e0b",
+    Low: "#10b981",
+  }
+  
+  const color = colors[riskLevel as keyof typeof colors] || "#64748b"
+  const size = isSelected ? 32 : 24
+  const pulseSize = isSelected ? 48 : 36
+  
+  return L.divIcon({
+    className: "custom-marker",
+    html: `
+      <div style="position: relative; width: ${size}px; height: ${size}px;">
+        ${isSelected ? `
+          <div style="
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: ${pulseSize}px;
+            height: ${pulseSize}px;
+            background-color: ${color};
+            border-radius: 50%;
+            opacity: 0.3;
+            animation: pulse 1.5s ease-out infinite;
+          "></div>
+        ` : ''}
+        <div style="
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          background-color: ${color};
+          width: ${size}px;
+          height: ${size}px;
+          border-radius: 50%;
+          border: 3px solid white;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          ${isSelected ? 'animation: bounce 0.5s ease-out;' : ''}
+        ">
+          <div style="
+            width: ${size / 3}px;
+            height: ${size / 3}px;
+            background-color: white;
+            border-radius: 50%;
+          "></div>
+        </div>
+      </div>
+    `,
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
+    popupAnchor: [0, -(size / 2)],
+  })
+}
+
 export default function LeafletFireMap({
   hotspots,
   selectedHotspot,
   onHotspotSelect,
   zoomTrigger = 0,
 }: LeafletFireMapProps) {
-  const [showHeatmap, setShowHeatmap] = useState(false)
-  const [map, setMap] = useState<any>(null)
   const [isClient, setIsClient] = useState(false)
+  const mapRef = useRef<any>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
 
-  // Only render on client side (fix Next.js hydration)
   useEffect(() => {
     setIsClient(true)
+    
+    // Cleanup on unmount
+    return () => {
+      if (mapRef.current) {
+        try {
+          mapRef.current.remove()
+          mapRef.current = null
+        } catch (error) {
+          console.log("Map cleanup error:", error)
+        }
+      }
+    }
   }, [])
 
-  // Zoom to selected hotspot when zoomTrigger changes
-  useEffect(() => {
-    if (map && selectedHotspot && zoomTrigger > 0) {
-      map.setView([selectedHotspot.latitude, selectedHotspot.longitude], 10, {
-        animate: true,
-        duration: 1,
-      })
-    }
-  }, [zoomTrigger, selectedHotspot, map])
-
-  const getRiskColor = (level: string) => {
-    switch (level) {
-      case "High":
-        return "#ef4444"
-      case "Medium":
-        return "#f59e0b"
-      case "Low":
-        return "#10b981"
-      default:
-        return "#6b7280"
-    }
-  }
-
-  // Only render map on client side
   if (!isClient) {
     return (
-      <Card className="overflow-hidden bg-white border-slate-200 shadow-sm">
-        <div className="relative w-full h-[480px] bg-slate-100 flex items-center justify-center">
-          <div className="text-slate-500">Loading map...</div>
+      <Card className="h-[500px] w-full flex items-center justify-center bg-slate-50 border-slate-200">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-orange-200 border-t-orange-600 rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-slate-600 font-medium">Loading map...</p>
         </div>
       </Card>
     )
   }
 
-  // Dynamic import Leaflet components (client-side only)
-  const { MapContainer, TileLayer, Marker, Popup, useMap, Circle } = require("react-leaflet")
-  const L = require("leaflet")
-
-  // Fix Leaflet default marker icon issue in Next.js
-  delete L.Icon.Default.prototype._getIconUrl
-  L.Icon.Default.mergeOptions({
-    iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png",
-    iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png",
-    shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
-  })
-
-  // Custom marker icons based on risk level
-  const createCustomIcon = (riskLevel: string, isSelected: boolean) => {
-    const color = getRiskColor(riskLevel)
-    const size = isSelected ? 40 : 30
-
-    return L.divIcon({
-      className: "custom-marker",
-      html: `
-        <div style="
-          width: ${size}px;
-          height: ${size}px;
-          background: ${color};
-          border: 3px solid white;
-          border-radius: 50%;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: white;
-          font-weight: bold;
-          font-size: ${isSelected ? "18px" : "14px"};
-          transition: all 0.3s ease;
-        ">
-          ${riskLevel === "High" ? "!" : "•"}
-        </div>
-      `,
-      iconSize: [size, size],
-      iconAnchor: [size / 2, size / 2],
-    })
-  }
-
-  // Component to set map reference
-  function MapController() {
-    const map = useMap()
-    useEffect(() => {
-      setMap(map)
-    }, [map])
-    return null
-  }
-
   return (
-    <Card className="overflow-hidden bg-white border-slate-200 shadow-sm">
-      <div className="relative w-full h-[480px]">
+    <Card className="overflow-hidden border-slate-200 shadow-lg">
+      <style jsx global>{`
+        @keyframes pulse {
+          0% {
+            transform: translate(-50%, -50%) scale(0.8);
+            opacity: 0.8;
+          }
+          100% {
+            transform: translate(-50%, -50%) scale(1.2);
+            opacity: 0;
+          }
+        }
+        
+        @keyframes bounce {
+          0%, 100% {
+            transform: translate(-50%, -50%) scale(1);
+          }
+          50% {
+            transform: translate(-50%, -50%) scale(1.2);
+          }
+        }
+        
+        .leaflet-container {
+          z-index: 0;
+        }
+      `}</style>
+      
+      <div ref={containerRef}>
         <MapContainer
-          center={[0.5, 101.5]}
-          zoom={7}
-          style={{ height: "100%", width: "100%" }}
-          zoomControl={false}
+          center={[0.5, 101.0]}
+          zoom={8}
+          style={{ height: "500px", width: "100%" }}
+          scrollWheelZoom={true}
+          className="z-0"
+          ref={mapRef}
+          whenCreated={(map) => {
+            mapRef.current = map
+          }}
         >
-          <MapController />
+          <MapController selectedHotspot={selectedHotspot} zoomTrigger={zoomTrigger} />
           
-          {/* OpenStreetMap Tiles */}
           <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
 
-          {/* Hotspot Markers */}
           {hotspots.map((hotspot) => {
             const isSelected = selectedHotspot?.id === hotspot.id
             
             return (
-              <div key={hotspot.id}>
-                {/* Main Marker */}
-                <Marker
-                  position={[hotspot.latitude, hotspot.longitude]}
-                  icon={createCustomIcon(hotspot.riskLevel, isSelected)}
-                  eventHandlers={{
-                    click: () => onHotspotSelect(hotspot),
-                  }}
-                >
-                  <Popup>
-                    <div className="p-2 min-w-[200px]">
-                      <h3 className="font-bold text-sm mb-2">{hotspot.location}</h3>
-                      <div className="space-y-1 text-xs">
-                        <p>
-                          <span className="font-semibold">Risk:</span>{" "}
-                          <span style={{ color: getRiskColor(hotspot.riskLevel) }}>
-                            {hotspot.riskLevel}
-                          </span>
-                        </p>
-                        <p>
-                          <span className="font-semibold">Confidence:</span> {hotspot.confidence}%
-                        </p>
-                        <p>
-                          <span className="font-semibold">Detected:</span> {hotspot.detectionTime}
-                        </p>
+              <Marker
+                key={`marker-${hotspot.id}`}
+                position={[hotspot.latitude, hotspot.longitude]}
+                icon={createCustomIcon(hotspot.riskLevel, isSelected)}
+                eventHandlers={{
+                  click: () => {
+                    onHotspotSelect(hotspot)
+                  },
+                }}
+              >
+                <Popup>
+                  <div className="p-2 min-w-[200px]">
+                    <h3 className="font-semibold text-sm mb-2">{hotspot.location}</h3>
+                    <div className="space-y-1 text-xs">
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-600">Type:</span>
+                        <Badge 
+                          className="text-xs" 
+                          variant={hotspot.detectionType === "Fire" ? "destructive" : "secondary"}
+                        >
+                          {hotspot.detectionType || "N/A"}
+                        </Badge>
                       </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-600">Risk:</span>
+                        <span className="font-semibold">{hotspot.riskLevel}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-600">Confidence:</span>
+                        <span className="font-semibold">{hotspot.confidence}%</span>
+                      </div>
+                      <div className="text-slate-500 mt-2">{hotspot.detectionTime}</div>
                     </div>
-                  </Popup>
-                </Marker>
-
-                {/* Heatmap Circle (if enabled) */}
-                {showHeatmap && (
-                  <Circle
-                    center={[hotspot.latitude, hotspot.longitude]}
-                    radius={
-                      hotspot.riskLevel === "High"
-                        ? 50000
-                        : hotspot.riskLevel === "Medium"
-                          ? 30000
-                          : 15000
-                    }
-                    pathOptions={{
-                      fillColor: getRiskColor(hotspot.riskLevel),
-                      fillOpacity: 0.3,
-                      color: getRiskColor(hotspot.riskLevel),
-                      weight: 1,
-                    }}
-                  />
-                )}
-              </div>
+                  </div>
+                </Popup>
+              </Marker>
             )
           })}
         </MapContainer>
-
-        {/* Controls */}
-        <div className="absolute top-4 right-4 z-[1000] bg-white/95 backdrop-blur border border-slate-200 rounded-lg shadow-md p-2 flex gap-2">
-          <button
-            onClick={() => map?.zoomIn()}
-            className="p-2 hover:bg-slate-100 rounded transition-colors text-slate-700 font-bold"
-            title="Zoom in"
-          >
-            +
-          </button>
-          <button
-            onClick={() => map?.zoomOut()}
-            className="p-2 hover:bg-slate-100 rounded transition-colors text-slate-700 font-bold"
-            title="Zoom out"
-          >
-            −
-          </button>
-          <div className="w-px bg-slate-200" />
-          <button
-            onClick={() => setShowHeatmap(!showHeatmap)}
-            className={`px-3 py-2 rounded transition-all flex items-center gap-2 text-sm font-medium ${
-              showHeatmap
-                ? "bg-orange-100 text-orange-700 hover:bg-orange-200"
-                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-            }`}
-            title="Toggle Risk Heatmap Overlay"
-          >
-            {showHeatmap ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-            <span className="hidden sm:inline">Heatmap</span>
-          </button>
-          <button
-            onClick={() => map?.setView([0.5, 101.5], 7)}
-            className="px-3 py-2 hover:bg-slate-100 rounded transition-colors text-slate-700 text-sm font-medium"
-            title="Reset view"
-          >
-            ↺
-          </button>
-        </div>
-
-        {/* Legend */}
-        <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur border border-slate-200 rounded-lg p-4 text-sm text-slate-900 shadow-md z-[1000]">
-          <p className="font-semibold mb-3 text-slate-900">Risk Levels</p>
-          <div className="space-y-2">
-            <div className="flex items-center gap-3">
-              <div
-                className="w-4 h-4 rounded-full border-2 border-white"
-                style={{ backgroundColor: getRiskColor("High") }}
-              />
-              <span className="text-xs text-slate-600">High Risk</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <div
-                className="w-4 h-4 rounded-full border-2 border-white"
-                style={{ backgroundColor: getRiskColor("Medium") }}
-              />
-              <span className="text-xs text-slate-600">Medium Risk</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <div
-                className="w-4 h-4 rounded-full border-2 border-white"
-                style={{ backgroundColor: getRiskColor("Low") }}
-              />
-              <span className="text-xs text-slate-600">Low Risk</span>
-            </div>
-          </div>
-
-          {showHeatmap && (
-            <div className="mt-3 pt-3 border-t border-slate-200">
-              <p className="text-xs font-semibold text-slate-700 mb-2">Heatmap Intensity</p>
-              <div className="h-3 rounded-full bg-gradient-to-r from-green-600 via-yellow-500 to-red-700" />
-              <div className="flex justify-between text-xs text-slate-500 mt-1">
-                <span>Low</span>
-                <span>High</span>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Map Info Footer */}
-      <div className="px-4 py-4 bg-slate-50 border-t border-slate-200 text-xs text-slate-600">
-        <p className="text-sm text-slate-600">
-          Sumatra Region • {hotspots.length} active hotspots detected • Click markers to view details
-        </p>
       </div>
     </Card>
   )

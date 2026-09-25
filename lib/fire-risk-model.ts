@@ -106,7 +106,7 @@ export async function trainModel(
   const xs = tf.tensor2d(trainingData.inputs)
   const ys = tf.tensor2d(trainingData.outputs)
 
-  console.log('🔥 Training fire risk prediction model...')
+  console.log('Training fire risk prediction model...')
 
   // Train the model
   await model!.fit(xs, ys, {
@@ -126,7 +126,7 @@ export async function trainModel(
     }
   })
 
-  console.log('✅ Model training complete!')
+  console.log('Model training complete!')
 
   // Clean up tensors
   xs.dispose()

@@ -10,6 +10,8 @@ interface DetectionResultProps {
     fireDetected: boolean
     confidence: number
     detectionType?: "Fire" | "Smoke" | "No Fire"
+    boundingBoxes?: any[]
+    detectedObjects?: string[]
   }
   onAnalyzeAnother?: () => void
 }
@@ -31,58 +33,98 @@ export default function DetectionResult({ result, onAnalyzeAnother }: DetectionR
     return () => clearInterval(interval)
   }, [result.confidence])
 
+  const hasDetections = 
+    result.fireDetected || 
+    (result.boundingBoxes && result.boundingBoxes.length > 0) ||
+    (result.detectedObjects && result.detectedObjects.length > 0)
+
+  // Determine detection type
+  const objects = result.detectedObjects || []
+  const hasFire = objects.some(obj => obj.toLowerCase().includes('fire'))
+  const hasSmoke = objects.some(obj => obj.toLowerCase().includes('smoke'))
+
   const getIcon = () => {
-    if (!result.fireDetected) {
+    if (!hasDetections) {
       return <CheckCircle className="w-8 h-8 text-green-600" />
     }
-    if (result.detectionType === "Fire") {
+    if (hasFire) {
       return <Flame className="w-8 h-8 text-red-600" />
     }
-    if (result.detectionType === "Smoke") {
+    if (hasSmoke) {
       return <Wind className="w-8 h-8 text-gray-600" />
     }
     return <AlertCircle className="w-8 h-8 text-orange-600" />
   }
 
   const getTitle = () => {
-    if (!result.fireDetected) return "No Fire Detected"
-    if (result.detectionType === "Fire") return "🔥 Fire Detected!"
-    if (result.detectionType === "Smoke") return "💨 Smoke Detected!"
-    return "⚠️ Fire/Smoke Detected"
+    if (!hasDetections) return "No Fire/Smoke Detected"
+    if (hasFire && hasSmoke) return "Fire & Smoke Detected"
+    if (hasFire) return "Fire Detected"
+    if (hasSmoke) return "Smoke Detected"
+    return "Fire/Smoke Detected"
   }
 
   const getColorClass = () => {
-    if (!result.fireDetected) {
+    if (!hasDetections) {
       return "border-green-500/50 bg-gradient-to-br from-green-50 to-emerald-50"
     }
-    if (result.detectionType === "Fire") {
+    if (hasFire) {
       return "border-red-500/50 bg-gradient-to-br from-red-50 to-orange-50"
     }
-    if (result.detectionType === "Smoke") {
+    if (hasSmoke) {
       return "border-gray-500/50 bg-gradient-to-br from-gray-50 to-slate-50"
     }
     return "border-orange-500/50 bg-gradient-to-br from-orange-50 to-amber-50"
   }
 
   const getIconBgClass = () => {
-    if (!result.fireDetected) return "bg-green-100"
-    if (result.detectionType === "Fire") return "bg-red-100"
-    if (result.detectionType === "Smoke") return "bg-gray-100"
+    if (!hasDetections) return "bg-green-100"
+    if (hasFire) return "bg-red-100"
+    if (hasSmoke) return "bg-gray-100"
     return "bg-orange-100"
   }
 
   const getProgressClass = () => {
-    if (!result.fireDetected) return "bg-gradient-to-r from-green-500 to-emerald-500"
-    if (result.detectionType === "Fire") return "bg-gradient-to-r from-red-500 to-orange-500"
-    if (result.detectionType === "Smoke") return "bg-gradient-to-r from-gray-500 to-slate-500"
+    if (!hasDetections) return "bg-gradient-to-r from-green-500 to-emerald-500"
+    if (hasFire) return "bg-gradient-to-r from-red-500 to-orange-500"
+    if (hasSmoke) return "bg-gradient-to-r from-gray-500 to-slate-500"
     return "bg-gradient-to-r from-orange-500 to-amber-500"
   }
 
   const getRiskColor = () => {
-    if (!result.fireDetected) return "text-green-600"
-    if (result.detectionType === "Fire") return "text-red-600"
-    if (result.detectionType === "Smoke") return "text-gray-700"
+    if (!hasDetections) return "text-green-600"
+    if (hasFire) return "text-red-600"
+    if (hasSmoke) return "text-gray-700"
     return "text-orange-600"
+  }
+
+  const getDetectionTypeLabel = () => {
+  if (!hasDetections) return "Clear"
+  
+  // Use inferredType if available (from smart detection)
+  if (result.inferredType) {
+    return result.inferredType
+  }
+  
+  // Fallback to old logic
+  const objects = result.detectedObjects || []
+  const hasFire = objects.some(obj => obj.toLowerCase().includes('fire'))
+  const hasSmoke = objects.some(obj => obj.toLowerCase().includes('smoke'))
+  
+  if (hasFire && hasSmoke) return "Fire & Smoke"
+  if (hasFire) return "Fire"
+  if (hasSmoke) return "Smoke"
+  
+  return "Fire/Smoke"
+}
+
+  const getRiskLevel = () => {
+    if (!hasDetections) return "Low"
+    if (hasFire) return "Critical"
+    if (hasSmoke) return "High"
+    if (result.confidence >= 80) return "High"
+    if (result.confidence >= 60) return "Medium"
+    return "Elevated"
   }
 
   return (
@@ -110,19 +152,11 @@ export default function DetectionResult({ result, onAnalyzeAnother }: DetectionR
               <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border">
                 <div>
                   <p className="text-xs text-muted-foreground mb-1">Detection Type</p>
-                  <p className="font-semibold">
-                    {result.detectionType || (result.fireDetected ? "Fire/Smoke" : "Clear")}
-                  </p>
+                  <p className="font-semibold">{getDetectionTypeLabel()}</p>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground mb-1">Risk Level</p>
-                  <p className={`font-semibold ${getRiskColor()}`}>
-                    {!result.fireDetected
-                      ? "Low"
-                      : result.detectionType === "Fire"
-                        ? "Critical"
-                        : "High"}
-                  </p>
+                  <p className={`font-semibold ${getRiskColor()}`}>{getRiskLevel()}</p>
                 </div>
               </div>
             </div>
