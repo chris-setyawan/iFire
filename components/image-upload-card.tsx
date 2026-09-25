@@ -8,7 +8,10 @@ import { useState, useRef, useEffect } from "react"
 interface BoundingBox {
   class: string
   score: number
-  bbox: [number, number, number, number] // [x, y, width, height]
+  x: number
+  y: number
+  width: number
+  height: number
 }
 
 interface ImageUploadCardProps {
@@ -32,7 +35,6 @@ export default function ImageUploadCard({
   const [renderedSize, setRenderedSize] = useState({ width: 0, height: 0 })
   const imageContainerRef = useRef<HTMLDivElement>(null)
   
-  // Track rendered image size
   useEffect(() => {
     if (!imageContainerRef.current || !uploadedImage) return
     
@@ -49,7 +51,6 @@ export default function ImageUploadCard({
       }
     }
     
-    // Update on load and resize
     const img = imageContainerRef.current.querySelector('img')
     if (img) {
       if (img.complete) {
@@ -85,8 +86,7 @@ export default function ImageUploadCard({
     onUpload()
   }
 
-  // Convert pixel coordinates - IMPROVED with rendered size
-  const getBoxStyle = (bbox: [number, number, number, number]) => {
+  const getBoxStyle = (box: any) => {
     if (!imageSize || !renderedSize.width || !renderedSize.height) {
       return { 
         left: "0px", 
@@ -96,19 +96,27 @@ export default function ImageUploadCard({
       }
     }
     
-    const [x, y, width, height] = bbox
+    let x, y, width, height
     
-    // Calculate scale between original and rendered
+    if (Array.isArray(box)) {
+      [x, y, width, height] = box
+    } else if (box.bbox && Array.isArray(box.bbox)) {
+      [x, y, width, height] = box.bbox
+    } else {
+      x = box.x || 0
+      y = box.y || 0
+      width = box.width || 0
+      height = box.height || 0
+    }
+    
     const scaleX = renderedSize.width / imageSize.width
     const scaleY = renderedSize.height / imageSize.height
     
-    // Apply scale to coordinates
     const scaledX = x * scaleX
     const scaledY = y * scaleY
     const scaledWidth = width * scaleX
     const scaledHeight = height * scaleY
     
-    // Center the bounding box in container (for object-contain behavior)
     const container = imageContainerRef.current
     if (!container) {
       return { 
@@ -134,8 +142,8 @@ export default function ImageUploadCard({
   }
 
   const getBoxColor = (className: string) => {
-    if (className === "Fire") return "#F44336"
-    if (className === "Smoke") return "#FF9800"
+    if (className === "fire" || className === "Fire") return "#F44336"
+    if (className === "smoke" || className === "Smoke") return "#FF9800"
     return "#F44336"
   }
 
@@ -157,11 +165,10 @@ export default function ImageUploadCard({
             className="object-contain" 
           />
           
-          {/* Accurate Bounding Boxes */}
           {!isDetecting && boundingBoxes.length > 0 && renderedSize.width > 0 && (
             <>
               {boundingBoxes.map((box, idx) => {
-                const style = getBoxStyle(box.bbox)
+                const style = getBoxStyle(box)
                 return (
                   <div
                     key={idx}
@@ -176,12 +183,11 @@ export default function ImageUploadCard({
                       boxShadow: `0 0 10px ${getBoxColor(box.class)}`,
                     }}
                   >
-                    {/* Label */}
                     <div 
                       className="absolute -top-7 left-0 px-2 py-1 text-xs font-bold text-white rounded shadow-lg whitespace-nowrap"
                       style={{ backgroundColor: getBoxColor(box.class) }}
                     >
-                      {box.class} {box.score}%
+                      {box.class} {Math.round(box.score * 100)}%
                     </div>
                   </div>
                 )

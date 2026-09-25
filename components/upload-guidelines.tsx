@@ -15,11 +15,7 @@ export default function UploadGuidelines() {
           </li>
           <li className="flex items-center gap-2 text-foreground">
             <span className="w-2 h-2 rounded-full bg-primary" />
-            <span>Video: MP4, AVI, MOV</span>
-          </li>
-          <li className="flex items-center gap-2 text-foreground">
-            <span className="w-2 h-2 rounded-full bg-primary" />
-            <span>Max File Size: 50MB</span>
+            <span>Max File Size: 10MB</span>
           </li>
           <li className="flex items-center gap-2 text-foreground">
             <span className="w-2 h-2 rounded-full bg-primary" />

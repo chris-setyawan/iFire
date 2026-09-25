@@ -1,0 +1,27 @@
+{
+  "model_type": "RandomForestClassifier",
+  "n_estimators": 200,
+  "max_depth": 15,
+  "accuracy": 0.92,
+  "cv_mean": 0.9002500000000001,
+  "cv_std": 0.006127125481550608,
+  "training_samples": 12000,
+  "test_samples": 3000,
+  "features": [
+    "temperature",
+    "humidity",
+    "wind_speed",
+    "rainfall_7d",
+    "consecutive_dry_days",
+    "soil_moisture",
+    "land_type",
+    "month"
+  ],
+  "target_classes": [
+    "Low",
+    "Medium",
+    "High",
+    "Critical"
+  ],
+  "trained_date": "2025-12-01T22:25:04.368000"
+}

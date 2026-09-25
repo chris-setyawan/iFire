@@ -27,7 +27,7 @@ export default function Home() {
               <h1 className="text-5xl md:text-7xl font-bold leading-tight text-balance">
                 Protect Forests with{" "}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-red-600">
-                  AI Intelligence
+                  Artificial Intelligence
                 </span>
               </h1>
               <p className="text-xl text-slate-600 leading-relaxed">
@@ -62,8 +62,8 @@ export default function Home() {
             {/* Stats */}
             <div className="grid grid-cols-3 gap-6 pt-8 border-t border-slate-200">
               {[
-                { label: "Detection Accuracy", value: "90%", icon: TrendingUp },
-                { label: "Response Time", value: "<2s", icon: Zap },
+                { label: "Detection and Prediction Accuracy", value: "80-92%", icon: TrendingUp },
+                { label: "Response Time", value: "<1s", icon: Zap },
                 { label: "Coverage", value: "Sumatra", icon: Globe },
               ].map((stat) => (
                 <div key={stat.label} className="space-y-2 group cursor-default">
@@ -79,54 +79,63 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Right Visual */}
+          {/* Right Visual - Professional Warm Palette Cards */}
           <div className="relative h-96 md:h-[600px]">
             <div className="absolute inset-0 bg-gradient-to-br from-orange-100 to-red-100 rounded-3xl animate-pulse-slow" />
             <div className="relative h-full rounded-3xl border-2 border-orange-200 bg-white/80 backdrop-blur-sm shadow-2xl overflow-hidden">
-              {/* Feature Cards Floating */}
+              {/* Feature Cards with Professional Warm Palette */}
               <div className="absolute inset-0 p-8 flex flex-col justify-center gap-4">
-                <Card className="p-6 bg-gradient-to-r from-orange-500 to-red-500 text-white transform hover:scale-105 transition-all shadow-xl animate-float">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-                      <Flame className="w-6 h-6" />
+                {/* Card 1: Dark Maroon/Red - Fire Detection */}
+                <Link href="/upload">
+                  <Card className="p-6 bg-gradient-to-r from-red-800 to-red-600 text-white transform hover:scale-105 transition-all shadow-xl animate-float cursor-pointer group">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center group-hover:bg-white/30 transition-colors">
+                        <Flame className="w-6 h-6" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-semibold text-lg">Fire Detection</p>
+                        <p className="text-sm text-white/80">Real-time AI analysis</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-semibold text-lg">Fire Detection</p>
-                      <p className="text-sm text-white/80">Real-time AI analysis</p>
-                    </div>
-                  </div>
-                </Card>
+                  </Card>
+                </Link>
 
-                <Card className="p-6 bg-gradient-to-r from-blue-500 to-cyan-500 text-white transform hover:scale-105 transition-all shadow-xl animate-float" style={{ animationDelay: '0.5s' }}>
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-                      <MapPin className="w-6 h-6" />
+                {/* Card 2: Bright Orange - Live Monitoring */}
+                <Link href="/dashboard">
+                  <Card className="p-6 bg-gradient-to-r from-orange-600 to-orange-500 text-white transform hover:scale-105 transition-all shadow-xl animate-float cursor-pointer group" style={{ animationDelay: '0.5s' }}>
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center group-hover:bg-white/30 transition-colors">
+                        <MapPin className="w-6 h-6" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-semibold text-lg">Live Monitoring</p>
+                        <p className="text-sm text-white/80">Interactive dashboard</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-semibold text-lg">Live Monitoring</p>
-                      <p className="text-sm text-white/80">Interactive dashboard</p>
-                    </div>
-                  </div>
-                </Card>
+                  </Card>
+                </Link>
 
-                <Card className="p-6 bg-gradient-to-r from-purple-500 to-pink-500 text-white transform hover:scale-105 transition-all shadow-xl animate-float" style={{ animationDelay: '1s' }}>
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-                      <Shield className="w-6 h-6" />
+                {/* Card 3: Golden Orange - Risk Prediction */}
+                <Link href="/risk-prediction">
+                  <Card className="p-6 bg-gradient-to-r from-orange-500 to-amber-500 text-white transform hover:scale-105 transition-all shadow-xl animate-float cursor-pointer group" style={{ animationDelay: '1s' }}>
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center group-hover:bg-white/30 transition-colors">
+                        <Shield className="w-6 h-6" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-semibold text-lg">Risk Prediction</p>
+                        <p className="text-sm text-white/80">ML-powered forecasting</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-semibold text-lg">Risk Prediction</p>
-                      <p className="text-sm text-white/80">ML-powered forecasting</p>
-                    </div>
-                  </div>
-                </Card>
+                  </Card>
+                </Link>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
+      {/* Features Section - Professional Warm Palette */}
       <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 bg-white/50 backdrop-blur-sm">
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-orange-100 text-orange-700 rounded-full text-sm font-medium mb-6">
@@ -150,56 +159,56 @@ export default function Home() {
               title: "Early Detection",
               description: "Identify fires at their earliest stages using computer vision and color-based analysis before they spread",
               icon: Flame,
-              gradient: "from-orange-500 to-red-500",
-              delay: "0s"
+              gradient: "from-red-800 to-red-600", // Dark maroon
+              href: "/upload",
             },
             {
               title: "Real-time Monitoring",
               description: "Continuous surveillance of high-risk forest areas with interactive Leaflet map integration",
               icon: MapPin,
-              gradient: "from-blue-500 to-cyan-500",
-              delay: "0.2s"
+              gradient: "from-orange-600 to-orange-500", // Bright orange
+              href: "/dashboard",
             },
             {
               title: "Risk Prediction",
               description: "Predict fire risk using neural networks based on weather, humidity, and vegetation data",
               icon: TrendingUp,
-              gradient: "from-purple-500 to-pink-500",
-              delay: "0.4s"
+              gradient: "from-orange-500 to-amber-500", // Golden orange
+              href: "/risk-prediction",
             },
           ].map((feature) => (
-            <Card
-              key={feature.title}
-              className="group relative p-8 hover:shadow-2xl transition-all duration-500 overflow-hidden border-2 hover:border-orange-200 animate-fade-in"
-              style={{ animationDelay: feature.delay }}
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-orange-50 to-red-50 opacity-0 group-hover:opacity-100 transition-opacity" />
-              
-              <div className="relative">
-                <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg`}>
-                  <feature.icon className="w-8 h-8 text-white" />
-                </div>
+            <Link key={feature.title} href={feature.href} className="block">
+              <Card
+                className="group relative p-8 h-full hover:shadow-2xl transition-all duration-500 overflow-hidden border-2 hover:border-orange-200 animate-fade-in cursor-pointer"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-orange-50 to-red-50 opacity-0 group-hover:opacity-100 transition-opacity" />
                 
-                <h3 className="text-2xl font-semibold mb-4 group-hover:text-orange-600 transition-colors">
-                  {feature.title}
-                </h3>
-                <p className="text-slate-600 leading-relaxed">
-                  {feature.description}
-                </p>
+                <div className="relative">
+                  <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg`}>
+                    <feature.icon className="w-8 h-8 text-white" />
+                  </div>
+                  
+                  <h3 className="text-2xl font-semibold mb-4 group-hover:text-orange-600 transition-colors">
+                    {feature.title}
+                  </h3>
+                  <p className="text-slate-600 leading-relaxed">
+                    {feature.description}
+                  </p>
 
-                <div className="mt-6 flex items-center text-orange-600 font-medium group-hover:gap-2 transition-all">
-                  <span>Learn more</span>
-                  <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  <div className="mt-6 flex items-center text-orange-600 font-medium group-hover:gap-2 transition-all">
+                    <span>Learn more</span>
+                    <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </div>
                 </div>
-              </div>
-            </Card>
+              </Card>
+            </Link>
           ))}
         </div>
       </section>
 
       {/* CTA Section */}
       <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-        <Card className="relative overflow-hidden bg-gradient-to-r from-orange-600 to-red-600 text-white p-12 md:p-16 shadow-2xl">
+        <Card className="relative overflow-hidden bg-gradient-to-r from-red-800 via-red-600 to-orange-600 text-white p-12 md:p-16 shadow-2xl">
           <div className="absolute inset-0 bg-black/10" />
           <div className="relative text-center max-w-3xl mx-auto space-y-8">
             <h2 className="text-4xl md:text-5xl font-bold">
@@ -212,7 +221,7 @@ export default function Home() {
               <Link href="/upload">
                 <Button 
                   size="lg" 
-                  className="bg-white text-orange-600 hover:bg-orange-50 shadow-xl hover:shadow-2xl transition-all"
+                  className="bg-white text-red-700 hover:bg-orange-50 shadow-xl hover:shadow-2xl transition-all font-semibold"
                 >
                   Get Started Free
                   <ArrowRightIcon className="w-4 h-4 ml-2" />

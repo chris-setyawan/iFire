@@ -64,7 +64,6 @@ export default function InteractiveFireMap({
     }
   }
 
-  // Normalize coordinates to SVG space (0-600, 0-400)
   const latToY = (lat: number) => {
     return 200 - (lat / 3) * 100
   }
@@ -73,7 +72,6 @@ export default function InteractiveFireMap({
     return ((lon - 95) / 10) * 300 + 300
   }
 
-  // Generate heatmap gradient points
   const heatmapPoints = hotspots.flatMap((hotspot) => {
     const intensity = hotspot.riskLevel === "High" ? 0.8 : hotspot.riskLevel === "Medium" ? 0.5 : 0.3
     const points = []
@@ -86,7 +84,6 @@ export default function InteractiveFireMap({
       id: `heat-${hotspot.id}-main`,
     })
 
-    // Surrounding points for heatmap effect
     const offset = 0.3
     ;[
       [hotspot.latitude + offset, hotspot.longitude + offset],
@@ -135,7 +132,6 @@ export default function InteractiveFireMap({
   const handleMouseUp = () => {
     if (isDragging) {
       setIsDragging(false)
-      // Apply the drag offset to the permanent pan
       setPan({
         x: pan.x + dragPan.x,
         y: pan.y + dragPan.y,
@@ -144,7 +140,6 @@ export default function InteractiveFireMap({
     }
   }
 
-  // Add mouse leave handler to stop dragging when leaving the map area
   const handleMouseLeave = () => {
     if (isDragging) {
       setIsDragging(false)
