@@ -12,6 +12,7 @@ Team project for an AI course at Binus University, themed on SDG 13 (climate act
 | Fire risk scoring | scikit-learn Random Forest | models/ |
 | API | FastAPI | fire_api.py |
 | Web app | Next.js, Tailwind, Leaflet | app/, components/, hooks/, lib/ |
+| Training code and logs | Ultralytics, scikit-learn | training/ |
 
 ## Results
 
@@ -25,7 +26,7 @@ For a fire alarm, recall is the number that matters more. At 0.767 the model sti
 
 The risk model is a Random Forest with 200 trees at depth 15 and it reaches 92 percent accuracy, but on synthetic data. The 15,000 rows were generated from a rule I wrote over temperature, humidity, wind speed, rainfall, consecutive dry days, soil moisture, land type and month, so the score only shows the model can learn that rule back. It proves the pipeline works, not that the predictions are useful. Retraining on real fire history (NASA FIRMS hotspots with BMKG weather) is the next step.
 
-Both models were trained in Colab, and those notebooks are not in this repository yet. What is here is everything needed to run the models, not to retrain them. The trained risk model and its metadata sit in models/, and the detector weights are linked below.
+The training code and the raw logs are in [training/](training/), including `runs/fire_detector6/results.csv`, which is where 0.803, 0.849 and 0.767 come from, and `args.yaml`, which records the 100 epochs. The image dataset is not in the repository because of its size.
 
 ## A bug worth knowing about
 
