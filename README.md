@@ -2,6 +2,8 @@
 
 Detects fire and smoke in a photo, and scores wildfire risk from weather conditions before anything burns.
 
+There is a demo video at https://youtu.be/clAtAWDUNNg.
+
 Team project for an AI course at Binus University, themed on SDG 13 (climate action). My part was training the detector, building the risk model, the FastAPI backend and wiring the Next.js app to it. Teammates wrote the report, made the slides and sourced the dataset. The frontend layout started from a v0 template.
 
 ## What is in here
